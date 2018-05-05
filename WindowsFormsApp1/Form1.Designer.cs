@@ -189,9 +189,6 @@
         private System.Windows.Forms.Label lab121;
         private System.Windows.Forms.Label lab123;
         private System.Windows.Forms.Label label61;
-        private System.Windows.Forms.TextBox Sno;
-        private System.Windows.Forms.TextBox Sname;
-        private System.Windows.Forms.TextBox Sdept;
         private System.Windows.Forms.Label label59;
         private System.Windows.Forms.Label label60;
         private System.Windows.Forms.Button Statistics;
@@ -226,14 +223,12 @@
         private System.Windows.Forms.Label label72;
         private System.Windows.Forms.Button Tea_Confirm;
         private System.Windows.Forms.Label label73;
-        private System.Windows.Forms.TextBox Tea_NewPassword;
+        private System.Windows.Forms.TextBox Tea_New_Password;
         private System.Windows.Forms.Label label74;
         private System.Windows.Forms.Label label76;
         private System.Windows.Forms.Button Tea_Find;
         private System.Windows.Forms.Label label77;
         private System.Windows.Forms.Label label82;
-        private System.Windows.Forms.Label label80;
-        private System.Windows.Forms.TextBox Tea_Sno;
         private System.Windows.Forms.Button Tea_Clock;
         private System.Windows.Forms.Label label75;
         private System.Windows.Forms.TextBox Tea_Start;
@@ -282,6 +277,9 @@
         private System.Windows.Forms.Button Admin_Load;
         private System.Windows.Forms.Label label66;
         private System.Windows.Forms.TextBox Admin_Password;
+        private System.Windows.Forms.Label Sdept;
+        private System.Windows.Forms.Label Sname;
+        private System.Windows.Forms.Label Sno;
     }
 }
 

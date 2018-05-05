@@ -83,6 +83,51 @@ namespace WindowsFormsApp1
             }
             return null;
         }
+        public static String Reset(MySqlCommand mySqlCommand)
+        {
+            try
+            {
+                if (mySqlCommand.ExecuteNonQuery() > 0)
+                    System.Windows.Forms.MessageBox.Show("密码重置成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            }
+            catch (Exception ex)
+            {
+                String message = ex.Message;
+                return message;
+            }
+            return null;
+        }
+        public static String Update(MySqlCommand mySqlCommand)
+        {
+            try
+            {
+                if (mySqlCommand.ExecuteNonQuery() > 0)
+                    System.Windows.Forms.MessageBox.Show("密码修改成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            }
+            catch (Exception ex)
+            {
+                String message = ex.Message;
+                return message;
+            }
+            return null;
+        }
+        public static String Register(MySqlCommand mySqlCommand)
+        {
+            try
+            {
+                if (mySqlCommand.ExecuteNonQuery() > 0)
+                    System.Windows.Forms.MessageBox.Show("注册成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            }
+            catch (Exception ex)
+            {
+                String message = ex.Message;
+                return message;
+            }
+            return null;
+        }
         /// <summary>
         /// 修改数据
         /// </summary>
