@@ -19,9 +19,6 @@
             }
             base.Dispose(disposing);
         }
-
-        private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label1;
@@ -192,33 +189,17 @@
         private System.Windows.Forms.Label label59;
         private System.Windows.Forms.Label label60;
         private System.Windows.Forms.Button Statistics;
-        private System.Windows.Forms.Button InitButton;
         private System.Windows.Forms.Label label62;
         private System.Windows.Forms.Button Button_find;
-        private System.Windows.Forms.TabControl tabControl2;
-        private System.Windows.Forms.TabPage tabPage3;
-        private System.Windows.Forms.TabPage tabPage4;
-        private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.Label stu_tag;
         private System.Windows.Forms.Button Exit_Stu;
-        private System.Windows.Forms.Button Stu_Load;
-        private System.Windows.Forms.TextBox Stu_Password;
-        private System.Windows.Forms.TextBox Stu_Sno;
-        private System.Windows.Forms.Label label64;
-        private System.Windows.Forms.Label label63;
-        private System.Windows.Forms.Label Tea_tag;
         private System.Windows.Forms.Button Exit_Tea;
-        private System.Windows.Forms.Label Admin_tag;
-        private System.Windows.Forms.Button Exit_Admin;
-        private System.Windows.Forms.RichTextBox commonBox1;
-        private System.Windows.Forms.GroupBox stu_Interface;
         private System.Windows.Forms.Button Confirm;
         private System.Windows.Forms.Label label70;
         private System.Windows.Forms.TextBox New_Password;
         private System.Windows.Forms.Label label69;
         private System.Windows.Forms.TextBox Confirm_New;
         private System.Windows.Forms.Label label71;
-        private System.Windows.Forms.GroupBox tea_Interface;
         private System.Windows.Forms.TextBox Tea_New_Again;
         private System.Windows.Forms.Label label72;
         private System.Windows.Forms.Button Tea_Confirm;
@@ -235,7 +216,6 @@
         private System.Windows.Forms.Label label78;
         private System.Windows.Forms.TextBox Tea_End;
         private System.Windows.Forms.Label label79;
-        private System.Windows.Forms.GroupBox admin_Interface;
         private System.Windows.Forms.TextBox Admin_New_Again;
         private System.Windows.Forms.Label label84;
         private System.Windows.Forms.Button Admin_Confirm;
@@ -264,22 +244,15 @@
         private System.Windows.Forms.Label label85;
         private System.Windows.Forms.Label label83;
         private System.Windows.Forms.TextBox Admin_Sno;
-        private System.Windows.Forms.GroupBox group_stu;
-        private System.Windows.Forms.GroupBox group_Tea;
-        private System.Windows.Forms.TextBox Tea_no;
-        private System.Windows.Forms.Label label90;
-        private System.Windows.Forms.Button Tea_Load;
-        private System.Windows.Forms.Label label97;
-        private System.Windows.Forms.TextBox Tea_Password;
-        private System.Windows.Forms.GroupBox group_Admin;
-        private System.Windows.Forms.TextBox Admin_no;
-        private System.Windows.Forms.Label label65;
-        private System.Windows.Forms.Button Admin_Load;
-        private System.Windows.Forms.Label label66;
-        private System.Windows.Forms.TextBox Admin_Password;
         private System.Windows.Forms.Label Sdept;
         private System.Windows.Forms.Label Sname;
         private System.Windows.Forms.Label Sno;
+        public System.Windows.Forms.TabPage tabPage1;
+        public System.Windows.Forms.TabControl tabControl1;
+        public System.Windows.Forms.GroupBox stu_Interface;
+        public System.Windows.Forms.GroupBox tea_Interface;
+        public System.Windows.Forms.GroupBox admin_Interface;
+        public System.Windows.Forms.RichTextBox commonBox1;
     }
 }
 

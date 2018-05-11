@@ -24,7 +24,7 @@ namespace WindowsFormsApp1
         /// <returns></returns>
         public static MySqlConnection GetMySqlCon()
         {
-            String mysqlStr = "server=localhost;User Id=root;password=123456;Database=laboratory";
+            String mysqlStr = "server=localhost;User Id=root;password=123456;Database=laboratory;Allow Zero Datetime=true";
             MySqlConnection mysql = new MySqlConnection(mysqlStr);
             return mysql;
         }

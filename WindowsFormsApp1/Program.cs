@@ -24,7 +24,7 @@ namespace WindowsFormsApp1
 
             thread1.Start();
 
-            Application.Run(new Form1());
+            Application.Run(new Form2());
 
             //thread1.Start();
         }
@@ -37,7 +37,7 @@ namespace WindowsFormsApp1
             int year = date_now.Year;
             int month = date_now.Month;
             int day = date_now.Day;
-            String str1 = "select Lno, Dev_no, Order_time, sum(All_course)  from my_order  where 0 = (select DATEDIFF(Order_time, '{0}-{1}-{2}')) group by Lno,Dev_no";
+            String str1 = "select Lno, Dev_no, Order_time,Start_course,End_course  from my_order  where 0 = (select DATEDIFF(Order_time, '{0}-{1}-{2}')) group by Lno,Dev_no";
             String strCmd = String.Format(str1, year, month, day);
 
             String format2 = "insert into statistics(Order_time,Lno,Dev_no,Efficient) values('{0}-{1}-{2}','{3}',{4},'{5}')";
@@ -55,7 +55,9 @@ namespace WindowsFormsApp1
                     String lno = (String)reader[0];
                     int dev_no = (int)reader[1];
                     DateTime dateTime = (DateTime)reader[2];
-                    int b = Convert.ToInt32(reader[3].ToString());
+                    int b1 = Convert.ToInt32(reader[3].ToString());
+                    int b2 = Convert.ToInt32(reader[4].ToString());
+                    int b = b2 - b1;
                     double a = (double)(b * 1.0 / 9.0);
 
                     double effi = (double)Math.Round(a, 2) * 100;

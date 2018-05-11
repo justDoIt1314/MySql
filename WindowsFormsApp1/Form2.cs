@@ -16,26 +16,166 @@ namespace WindowsFormsApp1
 {
     public partial class Form2 : Form
     {
+        static MySqlConnection mysqlConnect = TestDatebase.GetMySqlCon();
+        static Form1 form1;
         public Form2()
         {
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+
+
+        private void Stu_Sno_TextChanged(object sender, EventArgs e)
         {
-            string connstr = "server=localhost;User Id=root;password=123456;Database=company";
-            MySqlConnection mycon = new MySqlConnection(connstr);
-            mycon.Open();
-            MySqlCommand mycmd = new MySqlCommand("insert into product(prod_id,prod_name) values('P1005','摄像机')",mycon);
-            if(mycmd.ExecuteNonQuery()>0)
+
+        }
+
+        private void Stu_Load_Click(object sender, EventArgs e)
+        {
+            mysqlConnect.Open();
+            Form1 form1 = new Form1();
+            string sno = this.Stu_Sno.Text;
+            string sPassword = this.Stu_Password.Text;
+            string sname = null;
+            string sdept = null;
+            string format = "select * from student where Sno like '{0}' and Password like '{1}'";
+            string strCmd = string.Format(format, sno, sPassword);
+            string stu_tag = null;
+            MySqlCommand selectCmd = new MySqlCommand(strCmd, mysqlConnect);
+            MySqlDataReader reader1 = selectCmd.ExecuteReader();
+            Boolean isCorrect = false;
+            try
             {
-                this.label1.Text = "数据插入成功！";
+                while (reader1.Read())
+                {
+                    isCorrect = true;
+                    sname = reader1.GetString("Sname");
+                    sdept = reader1.GetString("Sdept");
+                }
             }
-            mycon.Close();
+            catch (Exception a)
+            {
+            }
+            finally
+            {
+                reader1.Close();
+            }
+            if (isCorrect == true)
+            {
+                stu_tag = "你好！ " + sname;
+               
+                form1 = new Form1(sno, sname, sdept, stu_tag,this);
+                form1.stu_Interface.Visible = true;
+                form1.tea_Interface.Visible = false;
+                form1.admin_Interface.Visible = false;
+                form1.tabControl1.Visible = true;
+                form1.commonBox1.Visible = true;
+                form1.Show();
+                this.Hide();
 
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("帐号或密码错误,请检查后重新登录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            mysqlConnect.Close();
+        }
 
+        private void Tea_Load_Click(object sender, EventArgs e)
+        {
+            mysqlConnect.Open();
+            string Tea_no = this.Tea_no.Text;
+            string Tea_password = this.Tea_Password.Text;
+            string Tea_name = null;
 
-           
+            string format = "select * from teacher where Tea_no like '{0}' and Tea_password like '{1}'";
+            string strCmd = string.Format(format, Tea_no, Tea_password);
+            MySqlCommand selectCmd = new MySqlCommand(strCmd, mysqlConnect);
+            MySqlDataReader reader1 = selectCmd.ExecuteReader();
+            Boolean isCorrect = false;
+            string tag;
+            try
+            {
+                while (reader1.Read())
+                {
+                    isCorrect = true;
+                    Tea_name = reader1.GetString("Tea_name");
+
+                }
+            }
+            catch (Exception a)
+            {
+            }
+            finally
+            {
+                reader1.Close();
+            }
+            if (isCorrect == true)
+            {               
+                tag = "你好！ " + Tea_name + "老师";
+                form1 = new Form1(tag,Tea_no,this);
+                form1.tabControl1.Visible = false;
+
+                form1.stu_Interface.Visible = true;
+                form1.tea_Interface.Visible = true;
+                form1.admin_Interface.Visible = false;
+                form1.Show();
+                this.Hide();
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("帐号或密码错误,请检查后重新登录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            mysqlConnect.Close();
+        }
+
+        private void Admin_Load_Click(object sender, EventArgs e)
+        {
+            mysqlConnect.Open();
+            string Admin_no = this.Admin_no.Text;
+            string Admin_password = this.Admin_Password.Text;
+            string Admin_name = null;
+
+            string format = "select * from administer where Admin_no like '{0}' and Admin_password like '{1}'";
+            string strCmd = string.Format(format, Admin_no, Admin_password);
+            MySqlCommand selectCmd = new MySqlCommand(strCmd, mysqlConnect);
+            MySqlDataReader reader1 = selectCmd.ExecuteReader();
+            string tag;
+            Boolean isCorrect = false;
+            try
+            {
+                while (reader1.Read())
+                {
+                    isCorrect = true;
+                    Admin_name = reader1.GetString("Admin_name");
+
+                }
+            }
+            catch (Exception a)
+            {
+            }
+            finally
+            {
+                reader1.Close();
+            }
+            if (isCorrect == true)
+            {                
+                tag = "你好！ " + Admin_name;
+                form1 = new Form1(tag, Admin_no, this);
+
+                form1.stu_Interface.Visible = true;
+                form1.tea_Interface.Visible = true;
+                form1.admin_Interface.Visible = true;
+                form1.tabControl1.Visible = false;
+                form1.Show();
+                this.Hide();
+               
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("帐号或密码错误,请检查后重新登录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            mysqlConnect.Close();
         }
     }
 }
