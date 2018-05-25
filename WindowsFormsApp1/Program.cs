@@ -20,10 +20,7 @@ namespace WindowsFormsApp1
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Thread thread1 = new Thread(new ThreadStart(Thread1));
-
-
-            thread1.Start();
-
+            thread1.Start();           
             Application.Run(new Form2());
 
             //thread1.Start();

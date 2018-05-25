@@ -253,6 +253,11 @@
         public System.Windows.Forms.GroupBox tea_Interface;
         public System.Windows.Forms.GroupBox admin_Interface;
         public System.Windows.Forms.RichTextBox commonBox1;
+        public System.Windows.Forms.Label Time;
+        public System.Windows.Forms.Label Date;
+        private System.Windows.Forms.Label label63;
+        private System.Windows.Forms.Button Cancel;
+        private System.Windows.Forms.TextBox orderList;
     }
 }
 

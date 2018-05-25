@@ -8,12 +8,14 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
 using System.Windows.Forms;
 
 
 
 namespace WindowsFormsApp1
 {
+   
     public partial class Form1 : Form
     {
 
@@ -23,7 +25,7 @@ namespace WindowsFormsApp1
         static int day_now = System.DateTime.Now.Day;
         static MySqlConnection mysqlConnect = TestDatebase.GetMySqlCon();
         Form2 form2;
-
+        List<string> mylist;
         /// <summary>
         /// 实现预约功能，判断是否能预约，以及预约失败后显示该设备被预约的时段
         /// </summary>
@@ -48,10 +50,13 @@ namespace WindowsFormsApp1
             int day = dateTimePicker1.Value.Day;
             String format1 = "{0}-{1}-{2}";
             String dateStr = string.Format(format1, year, month, day);
-
-            String format2 = "insert into  my_order values('{0}','{1}',{2},'{3}','{4}','{5}','{6}','{7}')";
-            //string order_cmd = string.Format(format2, lab, sno, dev_no, dateStr, start, end, date_now.Year,date_now.Month,date_now.Day,date_now.Hour,date_now.Minute);
+           
+            String format2 = "insert into  my_order values('{0}','{1}',{2},'{3}','{4}','{5}','{6}','{7}')";         
             string order_cmd = string.Format(format2, order_no,lab, sno, dev_no, dateStr, start, end, date_now);
+            /*
+           String format2 = "insert into  my_order(Lno,Sno,Dev_no,Order_time,Start_course,End_course,Current_time) values('{0}','{1}',{2},'{3}','{4}','{5}','{6}')";
+           string order_cmd = string.Format(format2, lab, sno, dev_no, dateStr, start, end, date_now);
+           */
             String format3 = "select * from lab where Lno like '{0}'";
             String labStr = String.Format(format3, lab);
 
@@ -81,6 +86,12 @@ namespace WindowsFormsApp1
                 System.Windows.Forms.MessageBox.Show("预约失败，请检查预约时间是否发生冲突", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
+            mysqlConnect.Open();
+            MySqlCommand mycmd_lab = new MySqlCommand(labStr, mysqlConnect);
+            String lab_name = TestDatebase.getResultset(mycmd_lab, "Lname");
+            String lab_addr = TestDatebase.getResultset(mycmd_lab, "Addr");
+            mysqlConnect.Close();
+            /*
             mysqlConnect.Open();
             
 
@@ -112,11 +123,26 @@ namespace WindowsFormsApp1
             }
             if(times>=3)
             {
-                System.Windows.Forms.MessageBox.Show("今天已经预约了3次，请明天再预约！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                System.Windows.Forms.MessageBox.Show("预约数不能超过3次！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 mysqlConnect.Close();
                 return;
             }
             mysqlConnect.Close();
+            */
+           
+            int times = new Form1().Orders(sno);
+            
+            if (times >= 3)
+            {
+                System.Windows.Forms.MessageBox.Show("预约数不能超过3次！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                mysqlConnect.Close();
+                string s = Button_find_Click(sno);
+
+                commBox.Text = s;
+                
+                return;
+            }
+            
             mysqlConnect.Open();
             MySqlCommand mycmd_order = new MySqlCommand(order_cmd, mysqlConnect);
             try
@@ -126,6 +152,11 @@ namespace WindowsFormsApp1
                     String tip = "";
                     tip+= "你成功预约了" + lab_addr + lab_name + "的" + dev_no + "号设备";
                     System.Windows.Forms.MessageBox.Show(tip, "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    string s = Button_find_Click(sno);
+                    
+                    commBox.Text = s;
+                    
                 }
             }
             catch (Exception r)
@@ -135,8 +166,9 @@ namespace WindowsFormsApp1
             finally
             {
                 mysqlConnect.Close();
-            }
                 
+            }
+            
 
         }
         /// <summary>
@@ -397,6 +429,7 @@ namespace WindowsFormsApp1
         
         string str_sno, str_sname, str_sdept, comNum;//comNum作为需要输入的字段，供以后扩展使用
         string str_stu_tag; //欢迎词
+        private Timer timer;
         public Form1(string sno, string sname, string sdept, string stu_tag,Form2 form2)
         {
             this.str_sno = sno;
@@ -406,6 +439,7 @@ namespace WindowsFormsApp1
             this.form2 = form2;
             InitializeComponent();
             this.Load += new EventHandler(Form1_Load_Stu);
+            this.Load += new EventHandler(MyTimer_load);
         }
         
         public Form1(string tag,string number,Form2 form2)
@@ -416,8 +450,25 @@ namespace WindowsFormsApp1
             this.form2 = form2;
             InitializeComponent();
             this.Load += new EventHandler(Form1_Load_Tea);
+            this.Load += new EventHandler(MyTimer_load);
         }
-       
+        private void MyTimer_load(object sender, EventArgs e)
+        {
+            timer = new Timer();
+            timer.Interval = 1000;
+            timer.Tick += new EventHandler(Timer_Tick);
+            timer.Start();
+
+        }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            string s1, s2;
+            DateTime dateTime = DateTime.Now;
+            s1 = dateTime.Year.ToString() + "年" + dateTime.Month.ToString() + "月" + dateTime.Day.ToString() + "日";
+            s2 = dateTime.ToString("HH:mm:ss");
+            this.Date.Text = s1;
+            this.Time.Text = s2;
+        }
         private void Form1_Load_Stu(object sender, EventArgs e)
         {
             this.Sno.Text = str_sno;
@@ -599,6 +650,23 @@ namespace WindowsFormsApp1
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tea_Interface = new System.Windows.Forms.GroupBox();
+            this.Tea_Clock = new System.Windows.Forms.Button();
+            this.Exit_Tea = new System.Windows.Forms.Button();
+            this.label75 = new System.Windows.Forms.Label();
+            this.Tea_New_Again = new System.Windows.Forms.TextBox();
+            this.Tea_Start = new System.Windows.Forms.TextBox();
+            this.label72 = new System.Windows.Forms.Label();
+            this.label78 = new System.Windows.Forms.Label();
+            this.Tea_End = new System.Windows.Forms.TextBox();
+            this.Tea_Confirm = new System.Windows.Forms.Button();
+            this.label79 = new System.Windows.Forms.Label();
+            this.label73 = new System.Windows.Forms.Label();
+            this.Tea_New_Password = new System.Windows.Forms.TextBox();
+            this.label74 = new System.Windows.Forms.Label();
+            this.label76 = new System.Windows.Forms.Label();
+            this.Tea_Find = new System.Windows.Forms.Button();
+            this.label77 = new System.Windows.Forms.Label();
+            this.label82 = new System.Windows.Forms.Label();
             this.admin_Interface = new System.Windows.Forms.GroupBox();
             this.Admin_Tea_Reset = new System.Windows.Forms.Button();
             this.Statistics = new System.Windows.Forms.Button();
@@ -630,23 +698,6 @@ namespace WindowsFormsApp1
             this.label88 = new System.Windows.Forms.Label();
             this.label89 = new System.Windows.Forms.Label();
             this.label91 = new System.Windows.Forms.Label();
-            this.Tea_Clock = new System.Windows.Forms.Button();
-            this.Exit_Tea = new System.Windows.Forms.Button();
-            this.label75 = new System.Windows.Forms.Label();
-            this.Tea_New_Again = new System.Windows.Forms.TextBox();
-            this.Tea_Start = new System.Windows.Forms.TextBox();
-            this.label72 = new System.Windows.Forms.Label();
-            this.label78 = new System.Windows.Forms.Label();
-            this.Tea_End = new System.Windows.Forms.TextBox();
-            this.Tea_Confirm = new System.Windows.Forms.Button();
-            this.label79 = new System.Windows.Forms.Label();
-            this.label73 = new System.Windows.Forms.Label();
-            this.Tea_New_Password = new System.Windows.Forms.TextBox();
-            this.label74 = new System.Windows.Forms.Label();
-            this.label76 = new System.Windows.Forms.Label();
-            this.Tea_Find = new System.Windows.Forms.Button();
-            this.label77 = new System.Windows.Forms.Label();
-            this.label82 = new System.Windows.Forms.Label();
             this.label52 = new System.Windows.Forms.Label();
             this.dateTimePicker1 = new System.Windows.Forms.DateTimePicker();
             this.label53 = new System.Windows.Forms.Label();
@@ -665,6 +716,9 @@ namespace WindowsFormsApp1
             this.Exit_Stu = new System.Windows.Forms.Button();
             this.commonBox1 = new System.Windows.Forms.RichTextBox();
             this.stu_Interface = new System.Windows.Forms.GroupBox();
+            this.label63 = new System.Windows.Forms.Label();
+            this.Cancel = new System.Windows.Forms.Button();
+            this.orderList = new System.Windows.Forms.TextBox();
             this.Sdept = new System.Windows.Forms.Label();
             this.Sname = new System.Windows.Forms.Label();
             this.Sno = new System.Windows.Forms.Label();
@@ -674,6 +728,8 @@ namespace WindowsFormsApp1
             this.label70 = new System.Windows.Forms.Label();
             this.New_Password = new System.Windows.Forms.TextBox();
             this.label69 = new System.Windows.Forms.Label();
+            this.Time = new System.Windows.Forms.Label();
+            this.Date = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox26)).BeginInit();
@@ -2325,7 +2381,6 @@ namespace WindowsFormsApp1
             this.label1.Size = new System.Drawing.Size(23, 15);
             this.label1.TabIndex = 5;
             this.label1.Text = "01";
-            //this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // pictureBox21
             // 
@@ -2562,13 +2617,174 @@ namespace WindowsFormsApp1
             this.tea_Interface.Controls.Add(this.Tea_Find);
             this.tea_Interface.Controls.Add(this.label77);
             this.tea_Interface.Controls.Add(this.label82);
-            this.tea_Interface.Location = new System.Drawing.Point(321, 17);
+            this.tea_Interface.Location = new System.Drawing.Point(321, 23);
             this.tea_Interface.Name = "tea_Interface";
             this.tea_Interface.Size = new System.Drawing.Size(290, 504);
             this.tea_Interface.TabIndex = 31;
             this.tea_Interface.TabStop = false;
             this.tea_Interface.Text = "教师界面";
             this.tea_Interface.Visible = false;
+            // 
+            // Tea_Clock
+            // 
+            this.Tea_Clock.Location = new System.Drawing.Point(16, 85);
+            this.Tea_Clock.Name = "Tea_Clock";
+            this.Tea_Clock.Size = new System.Drawing.Size(75, 23);
+            this.Tea_Clock.TabIndex = 36;
+            this.Tea_Clock.Text = "考勤";
+            this.Tea_Clock.UseVisualStyleBackColor = true;
+            this.Tea_Clock.Click += new System.EventHandler(this.Tea_Clock_Click);
+            // 
+            // Exit_Tea
+            // 
+            this.Exit_Tea.BackColor = System.Drawing.SystemColors.Info;
+            this.Exit_Tea.Location = new System.Drawing.Point(22, 433);
+            this.Exit_Tea.Name = "Exit_Tea";
+            this.Exit_Tea.Size = new System.Drawing.Size(75, 23);
+            this.Exit_Tea.TabIndex = 32;
+            this.Exit_Tea.Tag = "Tea";
+            this.Exit_Tea.Text = "退出";
+            this.Exit_Tea.UseVisualStyleBackColor = false;
+            this.Exit_Tea.Visible = false;
+            // 
+            // label75
+            // 
+            this.label75.AutoSize = true;
+            this.label75.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label75.Location = new System.Drawing.Point(19, 54);
+            this.label75.Name = "label75";
+            this.label75.Size = new System.Drawing.Size(29, 20);
+            this.label75.TabIndex = 31;
+            this.label75.Text = "第";
+            // 
+            // Tea_New_Again
+            // 
+            this.Tea_New_Again.Location = new System.Drawing.Point(92, 355);
+            this.Tea_New_Again.Name = "Tea_New_Again";
+            this.Tea_New_Again.PasswordChar = '*';
+            this.Tea_New_Again.Size = new System.Drawing.Size(100, 25);
+            this.Tea_New_Again.TabIndex = 30;
+            // 
+            // Tea_Start
+            // 
+            this.Tea_Start.Location = new System.Drawing.Point(54, 51);
+            this.Tea_Start.Name = "Tea_Start";
+            this.Tea_Start.Size = new System.Drawing.Size(57, 25);
+            this.Tea_Start.TabIndex = 0;
+            this.Tea_Start.TextChanged += new System.EventHandler(this.Tea_Start_TextChanged);
+            // 
+            // label72
+            // 
+            this.label72.AutoSize = true;
+            this.label72.Font = new System.Drawing.Font("宋体", 12F);
+            this.label72.Location = new System.Drawing.Point(15, 358);
+            this.label72.Name = "label72";
+            this.label72.Size = new System.Drawing.Size(109, 20);
+            this.label72.TabIndex = 29;
+            this.label72.Text = "再次输入：";
+            // 
+            // label78
+            // 
+            this.label78.AutoSize = true;
+            this.label78.Location = new System.Drawing.Point(117, 56);
+            this.label78.Name = "label78";
+            this.label78.Size = new System.Drawing.Size(15, 15);
+            this.label78.TabIndex = 33;
+            this.label78.Text = "-";
+            // 
+            // Tea_End
+            // 
+            this.Tea_End.Location = new System.Drawing.Point(138, 51);
+            this.Tea_End.Name = "Tea_End";
+            this.Tea_End.Size = new System.Drawing.Size(58, 25);
+            this.Tea_End.TabIndex = 1;
+            // 
+            // Tea_Confirm
+            // 
+            this.Tea_Confirm.Location = new System.Drawing.Point(18, 389);
+            this.Tea_Confirm.Name = "Tea_Confirm";
+            this.Tea_Confirm.Size = new System.Drawing.Size(75, 23);
+            this.Tea_Confirm.TabIndex = 28;
+            this.Tea_Confirm.Text = "确认";
+            this.Tea_Confirm.UseVisualStyleBackColor = true;
+            this.Tea_Confirm.Click += new System.EventHandler(this.Tea_Confirm_Click);
+            // 
+            // label79
+            // 
+            this.label79.AutoSize = true;
+            this.label79.Font = new System.Drawing.Font("宋体", 12F);
+            this.label79.Location = new System.Drawing.Point(202, 54);
+            this.label79.Name = "label79";
+            this.label79.Size = new System.Drawing.Size(49, 20);
+            this.label79.TabIndex = 35;
+            this.label79.Text = "节课";
+            // 
+            // label73
+            // 
+            this.label73.AutoSize = true;
+            this.label73.Font = new System.Drawing.Font("宋体", 12F);
+            this.label73.Location = new System.Drawing.Point(16, 330);
+            this.label73.Name = "label73";
+            this.label73.Size = new System.Drawing.Size(89, 20);
+            this.label73.TabIndex = 27;
+            this.label73.Text = "新密码：";
+            // 
+            // Tea_New_Password
+            // 
+            this.Tea_New_Password.Location = new System.Drawing.Point(92, 325);
+            this.Tea_New_Password.Name = "Tea_New_Password";
+            this.Tea_New_Password.PasswordChar = '*';
+            this.Tea_New_Password.Size = new System.Drawing.Size(100, 25);
+            this.Tea_New_Password.TabIndex = 26;
+            // 
+            // label74
+            // 
+            this.label74.AutoSize = true;
+            this.label74.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.label74.Location = new System.Drawing.Point(19, 300);
+            this.label74.Name = "label74";
+            this.label74.Size = new System.Drawing.Size(299, 15);
+            this.label74.TabIndex = 25;
+            this.label74.Text = "修改密码-----------------------------";
+            // 
+            // label76
+            // 
+            this.label76.AutoSize = true;
+            this.label76.Location = new System.Drawing.Point(33, 26);
+            this.label76.Name = "label76";
+            this.label76.Size = new System.Drawing.Size(0, 15);
+            this.label76.TabIndex = 2;
+            // 
+            // Tea_Find
+            // 
+            this.Tea_Find.BackColor = System.Drawing.SystemColors.Info;
+            this.Tea_Find.Location = new System.Drawing.Point(18, 232);
+            this.Tea_Find.Name = "Tea_Find";
+            this.Tea_Find.Size = new System.Drawing.Size(75, 23);
+            this.Tea_Find.TabIndex = 24;
+            this.Tea_Find.Text = "查询";
+            this.Tea_Find.UseVisualStyleBackColor = false;
+            this.Tea_Find.Click += new System.EventHandler(this.Tea_Find_Click);
+            // 
+            // label77
+            // 
+            this.label77.AutoSize = true;
+            this.label77.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.label77.Location = new System.Drawing.Point(16, 193);
+            this.label77.Name = "label77";
+            this.label77.Size = new System.Drawing.Size(112, 15);
+            this.label77.TabIndex = 20;
+            this.label77.Text = "查询：学生名单";
+            // 
+            // label82
+            // 
+            this.label82.AutoSize = true;
+            this.label82.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.label82.Location = new System.Drawing.Point(16, 25);
+            this.label82.Name = "label82";
+            this.label82.Size = new System.Drawing.Size(315, 15);
+            this.label82.TabIndex = 9;
+            this.label82.Text = "上机考勤-------------------------------";
             // 
             // admin_Interface
             // 
@@ -2602,14 +2818,13 @@ namespace WindowsFormsApp1
             this.admin_Interface.Controls.Add(this.label88);
             this.admin_Interface.Controls.Add(this.label89);
             this.admin_Interface.Controls.Add(this.label91);
-            this.admin_Interface.Location = new System.Drawing.Point(327, 11);
+            this.admin_Interface.Location = new System.Drawing.Point(321, 23);
             this.admin_Interface.Name = "admin_Interface";
             this.admin_Interface.Size = new System.Drawing.Size(290, 504);
             this.admin_Interface.TabIndex = 32;
             this.admin_Interface.TabStop = false;
             this.admin_Interface.Text = "管理员界面";
             this.admin_Interface.Visible = false;
-       
             // 
             // Admin_Tea_Reset
             // 
@@ -2885,167 +3100,6 @@ namespace WindowsFormsApp1
             this.label91.TabIndex = 9;
             this.label91.Text = "添加学生帐号和重置学生密码-------------------------------";
             // 
-            // Tea_Clock
-            // 
-            this.Tea_Clock.Location = new System.Drawing.Point(16, 85);
-            this.Tea_Clock.Name = "Tea_Clock";
-            this.Tea_Clock.Size = new System.Drawing.Size(75, 23);
-            this.Tea_Clock.TabIndex = 36;
-            this.Tea_Clock.Text = "考勤";
-            this.Tea_Clock.UseVisualStyleBackColor = true;
-            this.Tea_Clock.Click += new System.EventHandler(this.Tea_Clock_Click);
-            // 
-            // Exit_Tea
-            // 
-            this.Exit_Tea.BackColor = System.Drawing.SystemColors.Info;
-            this.Exit_Tea.Location = new System.Drawing.Point(22, 433);
-            this.Exit_Tea.Name = "Exit_Tea";
-            this.Exit_Tea.Size = new System.Drawing.Size(75, 23);
-            this.Exit_Tea.TabIndex = 32;
-            this.Exit_Tea.Tag = "Tea";
-            this.Exit_Tea.Text = "退出";
-            this.Exit_Tea.UseVisualStyleBackColor = false;
-            this.Exit_Tea.Visible = false;
-            // 
-            // label75
-            // 
-            this.label75.AutoSize = true;
-            this.label75.Font = new System.Drawing.Font("宋体", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label75.Location = new System.Drawing.Point(19, 54);
-            this.label75.Name = "label75";
-            this.label75.Size = new System.Drawing.Size(29, 20);
-            this.label75.TabIndex = 31;
-            this.label75.Text = "第";
-            // 
-            // Tea_New_Again
-            // 
-            this.Tea_New_Again.Location = new System.Drawing.Point(92, 355);
-            this.Tea_New_Again.Name = "Tea_New_Again";
-            this.Tea_New_Again.PasswordChar = '*';
-            this.Tea_New_Again.Size = new System.Drawing.Size(100, 25);
-            this.Tea_New_Again.TabIndex = 30;
-            // 
-            // Tea_Start
-            // 
-            this.Tea_Start.Location = new System.Drawing.Point(54, 51);
-            this.Tea_Start.Name = "Tea_Start";
-            this.Tea_Start.Size = new System.Drawing.Size(57, 25);
-            this.Tea_Start.TabIndex = 0;
-            this.Tea_Start.TextChanged += new System.EventHandler(this.Tea_Start_TextChanged);
-            // 
-            // label72
-            // 
-            this.label72.AutoSize = true;
-            this.label72.Font = new System.Drawing.Font("宋体", 12F);
-            this.label72.Location = new System.Drawing.Point(15, 358);
-            this.label72.Name = "label72";
-            this.label72.Size = new System.Drawing.Size(109, 20);
-            this.label72.TabIndex = 29;
-            this.label72.Text = "再次输入：";
-            // 
-            // label78
-            // 
-            this.label78.AutoSize = true;
-            this.label78.Location = new System.Drawing.Point(117, 56);
-            this.label78.Name = "label78";
-            this.label78.Size = new System.Drawing.Size(15, 15);
-            this.label78.TabIndex = 33;
-            this.label78.Text = "-";
-            // 
-            // Tea_End
-            // 
-            this.Tea_End.Location = new System.Drawing.Point(138, 51);
-            this.Tea_End.Name = "Tea_End";
-            this.Tea_End.Size = new System.Drawing.Size(58, 25);
-            this.Tea_End.TabIndex = 1;
-            // 
-            // Tea_Confirm
-            // 
-            this.Tea_Confirm.Location = new System.Drawing.Point(18, 389);
-            this.Tea_Confirm.Name = "Tea_Confirm";
-            this.Tea_Confirm.Size = new System.Drawing.Size(75, 23);
-            this.Tea_Confirm.TabIndex = 28;
-            this.Tea_Confirm.Text = "确认";
-            this.Tea_Confirm.UseVisualStyleBackColor = true;
-            this.Tea_Confirm.Click += new System.EventHandler(this.Tea_Confirm_Click);
-            // 
-            // label79
-            // 
-            this.label79.AutoSize = true;
-            this.label79.Font = new System.Drawing.Font("宋体", 12F);
-            this.label79.Location = new System.Drawing.Point(202, 54);
-            this.label79.Name = "label79";
-            this.label79.Size = new System.Drawing.Size(49, 20);
-            this.label79.TabIndex = 35;
-            this.label79.Text = "节课";
-            // 
-            // label73
-            // 
-            this.label73.AutoSize = true;
-            this.label73.Font = new System.Drawing.Font("宋体", 12F);
-            this.label73.Location = new System.Drawing.Point(16, 330);
-            this.label73.Name = "label73";
-            this.label73.Size = new System.Drawing.Size(89, 20);
-            this.label73.TabIndex = 27;
-            this.label73.Text = "新密码：";
-            // 
-            // Tea_New_Password
-            // 
-            this.Tea_New_Password.Location = new System.Drawing.Point(92, 325);
-            this.Tea_New_Password.Name = "Tea_New_Password";
-            this.Tea_New_Password.PasswordChar = '*';
-            this.Tea_New_Password.Size = new System.Drawing.Size(100, 25);
-            this.Tea_New_Password.TabIndex = 26;
-            // 
-            // label74
-            // 
-            this.label74.AutoSize = true;
-            this.label74.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label74.Location = new System.Drawing.Point(19, 300);
-            this.label74.Name = "label74";
-            this.label74.Size = new System.Drawing.Size(299, 15);
-            this.label74.TabIndex = 25;
-            this.label74.Text = "修改密码-----------------------------";
-            // 
-            // label76
-            // 
-            this.label76.AutoSize = true;
-            this.label76.Location = new System.Drawing.Point(33, 26);
-            this.label76.Name = "label76";
-            this.label76.Size = new System.Drawing.Size(0, 15);
-            this.label76.TabIndex = 2;
-            // 
-            // Tea_Find
-            // 
-            this.Tea_Find.BackColor = System.Drawing.SystemColors.Info;
-            this.Tea_Find.Location = new System.Drawing.Point(18, 232);
-            this.Tea_Find.Name = "Tea_Find";
-            this.Tea_Find.Size = new System.Drawing.Size(75, 23);
-            this.Tea_Find.TabIndex = 24;
-            this.Tea_Find.Text = "查询";
-            this.Tea_Find.UseVisualStyleBackColor = false;
-            this.Tea_Find.Click += new System.EventHandler(this.Tea_Find_Click);
-            // 
-            // label77
-            // 
-            this.label77.AutoSize = true;
-            this.label77.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label77.Location = new System.Drawing.Point(16, 193);
-            this.label77.Name = "label77";
-            this.label77.Size = new System.Drawing.Size(112, 15);
-            this.label77.TabIndex = 20;
-            this.label77.Text = "查询：学生名单";
-            // 
-            // label82
-            // 
-            this.label82.AutoSize = true;
-            this.label82.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label82.Location = new System.Drawing.Point(16, 25);
-            this.label82.Name = "label82";
-            this.label82.Size = new System.Drawing.Size(315, 15);
-            this.label82.TabIndex = 9;
-            this.label82.Text = "上机考勤-------------------------------";
-            // 
             // label52
             // 
             this.label52.AutoSize = true;
@@ -3207,6 +3261,9 @@ namespace WindowsFormsApp1
             // 
             // stu_Interface
             // 
+            this.stu_Interface.Controls.Add(this.label63);
+            this.stu_Interface.Controls.Add(this.Cancel);
+            this.stu_Interface.Controls.Add(this.orderList);
             this.stu_Interface.Controls.Add(this.Sdept);
             this.stu_Interface.Controls.Add(this.Sname);
             this.stu_Interface.Controls.Add(this.Sno);
@@ -3238,6 +3295,34 @@ namespace WindowsFormsApp1
             this.stu_Interface.Text = "学生界面";
             this.stu_Interface.Visible = false;
             // 
+            // label63
+            // 
+            this.label63.AutoSize = true;
+            this.label63.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
+            this.label63.Location = new System.Drawing.Point(17, 294);
+            this.label63.Name = "label63";
+            this.label63.Size = new System.Drawing.Size(284, 15);
+            this.label63.TabIndex = 33;
+            this.label63.Text = "输入序号取消对应的预约--------------";
+            // 
+            // Cancel
+            // 
+            this.Cancel.BackColor = System.Drawing.SystemColors.Info;
+            this.Cancel.Location = new System.Drawing.Point(107, 319);
+            this.Cancel.Name = "Cancel";
+            this.Cancel.Size = new System.Drawing.Size(75, 23);
+            this.Cancel.TabIndex = 32;
+            this.Cancel.Text = "取消预约";
+            this.Cancel.UseVisualStyleBackColor = false;
+            this.Cancel.Click += new System.EventHandler(this.Cancel_Click);
+            // 
+            // orderList
+            // 
+            this.orderList.Location = new System.Drawing.Point(17, 319);
+            this.orderList.Name = "orderList";
+            this.orderList.Size = new System.Drawing.Size(57, 25);
+            this.orderList.TabIndex = 31;
+            // 
             // Sdept
             // 
             this.Sdept.AutoSize = true;
@@ -3267,7 +3352,7 @@ namespace WindowsFormsApp1
             // 
             // Confirm_New
             // 
-            this.Confirm_New.Location = new System.Drawing.Point(92, 355);
+            this.Confirm_New.Location = new System.Drawing.Point(92, 415);
             this.Confirm_New.Name = "Confirm_New";
             this.Confirm_New.PasswordChar = '*';
             this.Confirm_New.Size = new System.Drawing.Size(100, 25);
@@ -3277,7 +3362,7 @@ namespace WindowsFormsApp1
             // 
             this.label71.AutoSize = true;
             this.label71.Font = new System.Drawing.Font("宋体", 12F);
-            this.label71.Location = new System.Drawing.Point(15, 358);
+            this.label71.Location = new System.Drawing.Point(15, 418);
             this.label71.Name = "label71";
             this.label71.Size = new System.Drawing.Size(109, 20);
             this.label71.TabIndex = 29;
@@ -3285,7 +3370,7 @@ namespace WindowsFormsApp1
             // 
             // Confirm
             // 
-            this.Confirm.Location = new System.Drawing.Point(18, 389);
+            this.Confirm.Location = new System.Drawing.Point(18, 449);
             this.Confirm.Name = "Confirm";
             this.Confirm.Size = new System.Drawing.Size(75, 23);
             this.Confirm.TabIndex = 28;
@@ -3297,7 +3382,7 @@ namespace WindowsFormsApp1
             // 
             this.label70.AutoSize = true;
             this.label70.Font = new System.Drawing.Font("宋体", 12F);
-            this.label70.Location = new System.Drawing.Point(16, 330);
+            this.label70.Location = new System.Drawing.Point(16, 390);
             this.label70.Name = "label70";
             this.label70.Size = new System.Drawing.Size(89, 20);
             this.label70.TabIndex = 27;
@@ -3305,7 +3390,7 @@ namespace WindowsFormsApp1
             // 
             // New_Password
             // 
-            this.New_Password.Location = new System.Drawing.Point(92, 325);
+            this.New_Password.Location = new System.Drawing.Point(92, 385);
             this.New_Password.Name = "New_Password";
             this.New_Password.PasswordChar = '*';
             this.New_Password.Size = new System.Drawing.Size(100, 25);
@@ -3315,16 +3400,38 @@ namespace WindowsFormsApp1
             // 
             this.label69.AutoSize = true;
             this.label69.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-            this.label69.Location = new System.Drawing.Point(19, 300);
+            this.label69.Location = new System.Drawing.Point(19, 360);
             this.label69.Name = "label69";
             this.label69.Size = new System.Drawing.Size(299, 15);
             this.label69.TabIndex = 25;
             this.label69.Text = "修改密码-----------------------------";
             // 
+            // Time
+            // 
+            this.Time.AutoSize = true;
+            this.Time.Font = new System.Drawing.Font("楷体", 11F);
+            this.Time.Location = new System.Drawing.Point(24, 47);
+            this.Time.Name = "Time";
+            this.Time.Size = new System.Drawing.Size(69, 19);
+            this.Time.TabIndex = 89;
+            this.Time.Text = "label3";
+            // 
+            // Date
+            // 
+            this.Date.AutoSize = true;
+            this.Date.Font = new System.Drawing.Font("楷体", 11F);
+            this.Date.Location = new System.Drawing.Point(24, 17);
+            this.Date.Name = "Date";
+            this.Date.Size = new System.Drawing.Size(69, 19);
+            this.Date.TabIndex = 88;
+            this.Date.Text = "label2";
+            // 
             // Form1
             // 
-            this.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.ClientSize = new System.Drawing.Size(1118, 547);
+            this.BackColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.ClientSize = new System.Drawing.Size(1144, 595);
+            this.Controls.Add(this.Time);
+            this.Controls.Add(this.Date);
             this.Controls.Add(this.admin_Interface);
             this.Controls.Add(this.tea_Interface);
             this.Controls.Add(this.stu_tag);
@@ -3334,6 +3441,7 @@ namespace WindowsFormsApp1
             this.Controls.Add(this.tabControl1);
             this.Name = "Form1";
             this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "实验室管理系统";
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
@@ -3410,7 +3518,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_05.Tag.ToString(), 5, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+ 
         }
 
         private void Lab2_19_Click(object sender, EventArgs e)
@@ -3421,7 +3529,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_19.Tag.ToString(), 19, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+     
         }
 
         private void Lab2_24_Click(object sender, EventArgs e)
@@ -3443,7 +3551,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab1_01.Tag.ToString(), 1, sno,sname, sdept, this.dateTimePicker1, start, end,this.commonBox1);
-     
+
         }
 
         private void Lab1_03_Click(object sender, EventArgs e)
@@ -3454,7 +3562,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab1_03.Tag.ToString(), 3, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+       
         }
 
 
@@ -3511,7 +3619,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_01.Tag.ToString(), 1, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+  
         }
 
         private void Lab2_18_Click(object sender, EventArgs e)
@@ -3599,7 +3707,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab1_11.Tag.ToString(), 11, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+  
         }
 
         private void Lab1_12_Click(object sender, EventArgs e)
@@ -3698,7 +3806,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab1_20.Tag.ToString(), 20, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+ 
         }
 
         private void Lab1_21_Click(object sender, EventArgs e)
@@ -3849,7 +3957,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_08.Tag.ToString(), 8, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+     
         }
 
         private void Lab2_09_Click(object sender, EventArgs e)
@@ -3860,7 +3968,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_09.Tag.ToString(), 9, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+   
         }
 
         private void Lab2_10_Click(object sender, EventArgs e)
@@ -3882,7 +3990,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_11.Tag.ToString(), 11, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+ 
         }
 
         private void Lab2_12_Click(object sender, EventArgs e)
@@ -3904,7 +4012,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_13.Tag.ToString(), 13, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+ 
         }
 
         private void Lab2_14_Click(object sender, EventArgs e)
@@ -3915,7 +4023,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_14.Tag.ToString(), 14, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+   
         }
 
         private void Lab2_15_Click(object sender, EventArgs e)
@@ -3926,7 +4034,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_15.Tag.ToString(), 15, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+        
         }
 
         private void Lab2_16_Click(object sender, EventArgs e)
@@ -3937,7 +4045,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_16.Tag.ToString(), 16, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+  
         }
 
         private void Lab2_17_Click(object sender, EventArgs e)
@@ -3948,7 +4056,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_17.Tag.ToString(), 17, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+    
         }
 
         private void Lab2_20_Click(object sender, EventArgs e)
@@ -3970,7 +4078,7 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_21.Tag.ToString(), 21, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+          
         }
 
         private void Lab2_22_Click(object sender, EventArgs e)
@@ -3992,32 +4100,39 @@ namespace WindowsFormsApp1
             int start = Convert.ToInt32(this.order_start.Text.Trim());
             int end = Convert.ToInt32(this.order_end.Text.Trim());
             CommonClick(this.Lab2_23.Tag.ToString(), 23, sno, sname, sdept, this.dateTimePicker1, start, end, this.commonBox1);
-
+ 
         }
 
 
+       
         /// <summary>
         /// 学生查询自己预约信息
         /// </summary>
         /// <returns></returns>
         private void Button_find_Click_1(object sender, EventArgs e)
         {
-            mysqlConnect.Open();
+            mylist = new List<string>();
+
+            MySqlConnection connect= TestDatebase.GetMySqlCon();
+            connect.Open();
             DateTime date_now = DateTime.Now;
             String sno = this.Sno.Text.ToString();
             String str = "select * from my_order where Sno like '{0}'";
             String cmd_str = String.Format(str,sno);
-            MySqlCommand cmd_select = new MySqlCommand(cmd_str,mysqlConnect);
+            MySqlCommand cmd_select = new MySqlCommand(cmd_str, connect);
             MySqlDataReader reader1 = cmd_select.ExecuteReader();
-            String text = "你的预约信息：\n实验室编号    设备号     日期      时间段\n";
+            string text = "你的预约信息：\n";
+            text += "序号   实验室编号    设备号     日期      时间段\n";
             try
             {
+                int count = 1;
                 while (reader1.Read())
                 {
                     DateTime dateTime = reader1.GetDateTime("Order_time");
                     int year = dateTime.Year;
                     int month = dateTime.Month;
                     int day = dateTime.Day;
+                    
                     int days = CalDays(year, month, day) - CalDays(date_now.Year, date_now.Month, date_now.Day);
                     if(days>=0)
                     {
@@ -4025,8 +4140,10 @@ namespace WindowsFormsApp1
                         int dev_no = reader1.GetInt32("Dev_no");
                         int start_course = reader1.GetInt32("Start_course");
                         int end_course = reader1.GetInt32("End_course");
-                        text += lab + "       " + dev_no + "  " + year + "年" + month + "月" + day + "日" + "  " + start_course + "-" + end_course + "节课"+"\n";
-
+                        string s = reader1.GetDateTime("Current_time").ToString();
+                        mylist.Add(s);
+                        text += " "+count+"       "+lab + "          " + dev_no + "  " + year + "年" + month + "月" + day + "日" + "  " + start_course + "-" + end_course + "节课"+"\n";
+                        count++;
                     }
                 }
                 this.commonBox1.Text = text;
@@ -4038,7 +4155,105 @@ namespace WindowsFormsApp1
             {
                 reader1.Close();
             }
-            mysqlConnect.Close();
+            connect.Close();
+        }
+
+        /// <summary>
+        /// 学生查询自己预约信息
+        /// </summary>
+        /// <returns></returns>
+        public static string Button_find_Click(string sno)
+        {
+
+            //mylist = new List<string>;
+            MySqlConnection connect = TestDatebase.GetMySqlCon();
+            connect.Open();
+            DateTime date_now = DateTime.Now;
+            
+            String str = "select * from my_order where Sno like '{0}'";
+            String cmd_str = String.Format(str, sno);
+            MySqlCommand cmd_select = new MySqlCommand(cmd_str, connect);
+            MySqlDataReader reader1 = cmd_select.ExecuteReader();
+            string text = "你的预约信息：\n";
+            text += "序号   实验室编号    设备号     日期      时间段\n";
+            try
+            {
+                int count = 1;
+                while (reader1.Read())
+                {
+                    DateTime dateTime = reader1.GetDateTime("Order_time");
+                    int year = dateTime.Year;
+                    int month = dateTime.Month;
+                    int day = dateTime.Day;
+
+                    int days = CalDays(year, month, day) - CalDays(date_now.Year, date_now.Month, date_now.Day);
+                    if (days >= 0)
+                    {
+                        String lab = reader1.GetString("Lno");
+                        int dev_no = reader1.GetInt32("Dev_no");
+                        int start_course = reader1.GetInt32("Start_course");
+                        int end_course = reader1.GetInt32("End_course");
+                        string s = reader1.GetDateTime("Current_time").ToString();
+                        
+                        text += " " + count + "       " + lab + "          " + dev_no + "  " + year + "年" + month + "月" + day + "日" + "  " + start_course + "-" + end_course + "节课" + "\n";
+                        count++;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                string s = e.Message;
+            }
+            finally
+            {
+                reader1.Close();
+            }
+            connect.Close();
+            return text;
+        }
+        /// <summary>
+        /// 计算预约数
+        /// </summary>
+        /// <returns></returns>
+        public int Orders(string sno)
+        {
+            MySqlConnection connect = TestDatebase.GetMySqlCon();
+            connect.Open();
+            DateTime date_now = DateTime.Now;
+
+            String str = "select * from my_order where Sno like '{0}'";
+            String cmd_str = String.Format(str, sno);
+            MySqlCommand cmd_select = new MySqlCommand(cmd_str, connect);
+            MySqlDataReader reader1 = cmd_select.ExecuteReader();
+            int count = 0;
+            try
+            {
+               
+                while (reader1.Read())
+                {
+                    DateTime dateTime = reader1.GetDateTime("Order_time");
+                    int year = dateTime.Year;
+                    int month = dateTime.Month;
+                    int day = dateTime.Day;
+
+                    int days = CalDays(year, month, day) - CalDays(date_now.Year, date_now.Month, date_now.Day);
+                    if (days >= 0)
+                    {
+                       
+                        count++;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                string s = e.Message;
+            }
+            finally
+            {
+                reader1.Close();
+            }
+            connect.Close();
+            return count;
         }
         /// <summary>
         /// 管理员查询统计信息
@@ -4218,15 +4433,18 @@ namespace WindowsFormsApp1
             MySqlCommand cmd_select = new MySqlCommand(cmd_str, mysqlConnect);
             MySqlDataReader reader1 = cmd_select.ExecuteReader();
             String text = "学生名单：\n";
-            text +="    "+"学号           姓名   系别\n";
+            text +="学号           |  姓名 |   系别\n";
             try
             {
                 while (reader1.Read())
                 {
                     string sno = reader1.GetString("Sno");
                     string sname = reader1.GetString("Sname");
-                    string sdept = reader1.GetString("Sdept");
-                        text += "   "+sno + "     " + sname + "   " + sdept + "\n";                   
+                    string sdept = reader1.GetString("Sdept").Trim();
+                    string s1 = sno.PadRight(16);
+                    string s2 = sname.PadRight(6);
+                    string s3 = sdept.PadRight(20);
+                    text += s1+s2 +s3+"\n";                   
                 }
                 this.commonBox1.Text = text;
             }
@@ -4238,6 +4456,8 @@ namespace WindowsFormsApp1
                 reader1.Close();
             }
             mysqlConnect.Close();
+            
+          
         }
         /// <summary>
         /// 老师用户修改密码
@@ -4297,6 +4517,36 @@ namespace WindowsFormsApp1
             TestDatebase.Reset(cmd);
             mysqlConnect.Close();
         }
+
+        private void Cancel_Click(object sender, EventArgs e)
+        {
+            int t = Convert.ToInt32(this.orderList.Text);
+            if (t > mylist.Count || t <= 0)
+                return;
+            mysqlConnect.Open();
+            string s = mylist[t - 1];
+            string format = "delete from my_order  where my_order.Current_time='{0}'";
+            string strcmd = string.Format(format,s);
+            MySqlCommand cmd = new MySqlCommand(strcmd,mysqlConnect);
+            try
+            {
+                if (cmd.ExecuteNonQuery() > 0)
+                {
+                    System.Windows.Forms.MessageBox.Show("成功取消预约", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                }
+            }
+            catch (Exception a)
+            {
+                string mess = a.Message;
+            }
+            finally
+            {
+                mysqlConnect.Close();
+            }
+            Button_find_Click_1(new object(), new EventArgs());
+        }
+
         /// <summary>
         /// 管理员重置老师密码
         /// </summary>
@@ -4357,4 +4607,5 @@ namespace WindowsFormsApp1
 
 
     }
+   
 }

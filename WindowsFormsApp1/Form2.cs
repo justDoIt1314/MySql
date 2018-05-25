@@ -18,13 +18,32 @@ namespace WindowsFormsApp1
     {
         static MySqlConnection mysqlConnect = TestDatebase.GetMySqlCon();
         static Form1 form1;
+        private Timer timer;
         public Form2()
         {
+            this.Load += new EventHandler(Form2_load);
             InitializeComponent();
         }
 
+      
+        private void Form2_load(object sender, EventArgs e)
+        {
+            timer = new Timer();
+            timer.Interval = 1000;
+            timer.Tick += new EventHandler(Timer_Tick);
+            timer.Start();
 
-
+        }
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            string s1, s2;
+            DateTime dateTime = DateTime.Now;
+            s1 = dateTime.Year.ToString() + "年" + dateTime.Month.ToString() + "月" + dateTime.Day.ToString() + "日";
+            s2 = dateTime.ToString("HH:mm:ss");
+            this.Date.Text = s1;
+            this.Time.Text = s2;
+        }
+        
         private void Stu_Sno_TextChanged(object sender, EventArgs e)
         {
 

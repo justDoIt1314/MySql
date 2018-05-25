@@ -51,6 +51,8 @@
             this.label66 = new System.Windows.Forms.Label();
             this.label65 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.Date = new System.Windows.Forms.Label();
+            this.Time = new System.Windows.Forms.Label();
             this.tabControl2.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.group_stu.SuspendLayout();
@@ -347,6 +349,26 @@
             this.label1.TabIndex = 27;
             this.label1.Text = "实验室管理系统";
             // 
+            // Date
+            // 
+            this.Date.AutoSize = true;
+            this.Date.Font = new System.Drawing.Font("楷体", 11F);
+            this.Date.Location = new System.Drawing.Point(878, 9);
+            this.Date.Name = "Date";
+            this.Date.Size = new System.Drawing.Size(69, 19);
+            this.Date.TabIndex = 28;
+            this.Date.Text = "label2";
+            // 
+            // Time
+            // 
+            this.Time.AutoSize = true;
+            this.Time.Font = new System.Drawing.Font("楷体", 11F);
+            this.Time.Location = new System.Drawing.Point(878, 39);
+            this.Time.Name = "Time";
+            this.Time.Size = new System.Drawing.Size(69, 19);
+            this.Time.TabIndex = 29;
+            this.Time.Text = "label3";
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
@@ -354,11 +376,14 @@
             this.BackColor = System.Drawing.SystemColors.Highlight;
             this.BackgroundImage = global::WindowsFormsApp1.Properties.Resources.pc02;
             this.ClientSize = new System.Drawing.Size(1144, 595);
+            this.Controls.Add(this.Time);
+            this.Controls.Add(this.Date);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.tabControl2);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form2";
             this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "系统登录";
             this.tabControl2.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
@@ -399,5 +424,7 @@
         private System.Windows.Forms.Label label66;
         private System.Windows.Forms.Label label65;
         private System.Windows.Forms.Label label1;
+        public System.Windows.Forms.Label Date;
+        public System.Windows.Forms.Label Time;
     }
 }
